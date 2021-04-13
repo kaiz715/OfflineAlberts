@@ -59,6 +59,7 @@ while nextButton:
         clickNext = WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.XPATH, "//*[@id='app']/div/div[1]/div/div[3]/div[2]/div/div[2]/div/form/div[1]/div/button[2]"))
         )
+        time.sleep(1)
         element = driver.find_element_by_class_name('practice-view__question-area')
         element.screenshot((f'images/{i}.png'))
         i+=1
