@@ -8,6 +8,8 @@ from PIL import Image
 import config
 import getpass
 import time
+import albert
+import shutil
 
 email = config.email
 password = config.password
@@ -58,7 +60,7 @@ while nextButton:
             EC.presence_of_element_located((By.XPATH, "//*[@id='app']/div/div[1]/div/div[3]/div[2]/div/div[2]/div/form/div[1]/div/button[2]"))
         )
         element = driver.find_element_by_class_name('practice-view__question-area')
-        element.screenshot((f'question{i}.png'))
+        element.screenshot((f'images/{i}.png'))
         i+=1
         if clickNext.get_property('disabled'):
             nextButton = False
@@ -66,9 +68,8 @@ while nextButton:
             clickNext.click()
     finally:
         print(nextButton)
-
+albert.analyze()
 
 print("done")
 
-time.sleep(20)
 driver.quit()
