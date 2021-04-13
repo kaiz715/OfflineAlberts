@@ -64,18 +64,5 @@ while nextButton:
 
 print("done")
 
-# //*[@id="app"]/div/div[1]/div/div[3]/div[2]/div/div[2]/div/form/div[1]/div/button[2]
-# //*[@id="app"]/div/div[1]/div/div[3]/div[2]/div/div[2]/div/form/div[1]/div/button[2]
-
-# mainTable = WebDriverWait(driver, 10).until(
-#     EC.presence_of_element_located((By.CLASS_NAME, "sg-table__tbody"))
-# )
-# assignmentList = mainTable.find_elements_by_tag_name("tr")
-# for x in range(len(assignmentList)):
-#     print( assignmentList[x])
-# for assignment in assignmentList:
-#     print("hello")
-
-
 time.sleep(20)
 driver.quit()
