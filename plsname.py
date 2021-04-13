@@ -52,17 +52,24 @@ mainTable = WebDriverWait(driver, 10).until(
 start = WebDriverWait(driver, 10).until(
     EC.presence_of_element_located((By.XPATH,"//*[text()='View Questions']"))
 ).click()
-i = 0
+# i = 0
 nextButton = True
 while nextButton:
     try: 
         clickNext = WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.XPATH, "//*[@id='app']/div/div[1]/div/div[3]/div[2]/div/div[2]/div/form/div[1]/div/button[2]"))
         )
-        time.sleep(1)
+        
+        time.sleep(2)
+        title = driver.find_element_by_xpath("//*[@id='app']/div/div[1]/div/div[3]/div[2]/div/div[2]/div/form/div[1]/div/div/h1/div/div")
+        title = title.text
+        title = title.replace(":","").replace("?","").replace("*","").replace("/","").replace("<","").replace(">","").strip()
+
+
         element = driver.find_element_by_class_name('practice-view__question-area')
-        element.screenshot((f'images/{i}.png'))
-        i+=1
+        element.screenshot((f'images/{title}.png'))
+
+        # i+=1
         if clickNext.get_property('disabled'):
             nextButton = False
         else:
@@ -70,7 +77,7 @@ while nextButton:
     finally:
         print(nextButton)
         
-albert.analyze()
+# albert.analyze()
 
 print("done")
 
