@@ -25,5 +25,3 @@ def analyze():
         except Exception as e:  #if doesn't work, print error and pass
             print(e)
             pass
-
-analyze()

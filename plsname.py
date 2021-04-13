@@ -68,6 +68,7 @@ while nextButton:
             clickNext.click()
     finally:
         print(nextButton)
+        
 albert.analyze()
 
 print("done")
