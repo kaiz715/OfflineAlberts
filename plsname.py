@@ -32,7 +32,7 @@ password_field.send_keys(password)
 password_field.send_keys(Keys.RETURN)
 
 calc = WebDriverWait(driver, 10).until(
-    EC.presence_of_element_located((By.ID, "dbdd7f0f-1868-48fa-af9e-d4be7d79c22a"))
+    EC.presence_of_element_located((By.ID, config.classID))
 ).click()
 
 finishedTab = WebDriverWait(driver,10).until(
