@@ -3,6 +3,8 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.chrome.options import Options
+from PIL import Image
 import config
 import getpass
 import time
@@ -11,7 +13,9 @@ email = config.email
 password = config.password
 # email = input("Enter Email: ")
 # password = getpass.getpass("Enter Password: ") 
-driver = webdriver.Chrome(config.path)
+chrome_options = Options()
+chrome_options.add_argument("--window-size=1900,5000")
+driver = webdriver.Chrome(config.path, chrome_options=chrome_options)
 
 driver.get("https://www.albert.io/log-in/")
 
@@ -46,14 +50,16 @@ mainTable = WebDriverWait(driver, 10).until(
 start = WebDriverWait(driver, 10).until(
     EC.presence_of_element_located((By.XPATH,"//*[text()='View Questions']"))
 ).click()
-
+i = 0
 nextButton = True
 while nextButton:
     try: 
         clickNext = WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.XPATH, "//*[@id='app']/div/div[1]/div/div[3]/div[2]/div/div[2]/div/form/div[1]/div/button[2]"))
         )
-        time.sleep(1)   #only here because program too fast lol. will be replaced with screenshot
+        element = driver.find_element_by_class_name('practice-view__question-area')
+        element.screenshot((f'question{i}.png'))
+        i+=1
         if clickNext.get_property('disabled'):
             nextButton = False
         else:
