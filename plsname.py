@@ -3,16 +3,15 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+import config
 import getpass
 import time
 
-email = "cwu@beachwoodstudents.org"
-password = "Bw187403"
+email = config.email
+password = config.password
 # email = input("Enter Email: ")
 # password = getpass.getpass("Enter Password: ") 
-
-path = "C:\\Users\\Christian Wu\Desktop\\Random Projects\\Visual Studio Code Projects\\chromedriver.exe"
-driver = webdriver.Chrome(path)
+driver = webdriver.Chrome(config.path)
 
 driver.get("https://www.albert.io/log-in/")
 
