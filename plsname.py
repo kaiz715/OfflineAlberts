@@ -6,15 +6,13 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
 from PIL import Image
 import config
-import getpass
 import time
 import albert
 import shutil
+import os.path
 
 email = config.email
 password = config.password
-# email = input("Enter Email: ")
-# password = getpass.getpass("Enter Password: ") 
 chrome_options = Options()
 chrome_options.add_argument("--window-size=1900,5000")
 driver = webdriver.Chrome(config.path, chrome_options=chrome_options)
@@ -44,28 +42,12 @@ finishedTab = WebDriverWait(driver,10).until(
     EC.presence_of_element_located((By.XPATH, "/html/body/div[2]/div/div/div[1]/div/div[3]/div/div[2]/div/div/div[1]/button[3]"))
 ).click()
 
-# mainTable = WebDriverWait(driver, 10).until(
-#     EC.presence_of_element_located((By.XPATH, "/html/body/div[2]/div/div/div[1]/div/div[3]/div/div[2]/div/div/div[2]/div/div[1]/div[2]/table/tbody/tr[1]/td[2]/div"))
-# ).click()
+assignments = WebDriverWait(driver, 10).until(             
+    EC.presence_of_all_elements_located((By.CLASS_NAME, "sg-table__tr--link"))
+)
 
-# mainTable = WebDriverWait(driver, 10).until(              #doesnt fucking work
-#     EC.presence_of_element_located((By.CLASS_NAME,"sg-table__tbody"))
-# )
-# assignments = mainTable.find_elements_by_tag_name("tr")
-# for assignment in assignments:
-#     time.sleep(2)
-#     clickey = assignment.find_element_by_tag_name("td")
-#     clickey.click()
-#     time.sleep(2)
-#     driver.back()
-
-for i in range(1,26):                   #works
-    # xpath = '//*[@id="app"]/div/div[1]/div/div[3]/div/div[2]/div/div/div[2]/div/div[1]/div[2]/table/tbody/tr[{}]'.format(i)
-    # assignment = WebDriverWait(driver, 10).until(
-    #     EC.presence_of_element_located((By.XPATH, xpath))
-    # ).click()
-
-    xpath = '//*[@id="app"]/div/div[1]/div/div[3]/div/div[2]/div/div/div[2]/div/div[1]/div[2]/table/tbody/tr[{}]'.format(i)
+for i in range(len(assignments)):                   #works
+    xpath = '//*[@id="app"]/div/div[1]/div/div[3]/div/div[2]/div/div/div[2]/div/div[1]/div[2]/table/tbody/tr[{}]'.format(i+1)
     time.sleep(1)
     assignment = driver.find_element_by_xpath(xpath)
     assignment.click()
@@ -90,11 +72,14 @@ for i in range(1,26):                   #works
                 title = driver.find_element_by_xpath("//*[@id='app']/div/div[1]/div/div[3]/div[2]/div/div[2]/div/form/div[1]/div/div/h1/div/div")
                 title = title.text
                 title = title.replace(":","").replace("?","").replace("*","").replace("/","").replace("<","").replace(">","").strip()
-
+                
                 element = driver.find_element_by_class_name('practice-view__question-area')
-                element.screenshot((f'images/{title}.png'))
+                path = f'images/{title}.png'
+                if not os.path.exists(path):
+                    element.screenshot((path))
+                else:
+                    element.screenshot((f'images/{title+str(1)}.png'))
 
-                # i+=1
                 if clickNext.get_property('disabled'):
                     nextButton = False
                 else:
@@ -104,40 +89,7 @@ for i in range(1,26):                   #works
     elif question == "N":
         pass
     else:
-        driver.quit()
-    time.sleep(2)
+        break
     driver.back()
-
-# start = WebDriverWait(driver, 10).until(
-#     EC.presence_of_element_located((By.XPATH,"//*[text()='View Questions']"))
-# ).click()
-
-# nextButton = True
-# while nextButton:
-#     try: 
-#         clickNext = WebDriverWait(driver, 10).until(
-#             EC.presence_of_element_located((By.XPATH, "//*[@id='app']/div/div[1]/div/div[3]/div[2]/div/div[2]/div/form/div[1]/div/button[2]"))
-#         )
-        
-#         time.sleep(2)
-#         title = driver.find_element_by_xpath("//*[@id='app']/div/div[1]/div/div[3]/div[2]/div/div[2]/div/form/div[1]/div/div/h1/div/div")
-#         title = title.text
-#         title = title.replace(":","").replace("?","").replace("*","").replace("/","").replace("<","").replace(">","").strip()
-
-
-#         element = driver.find_element_by_class_name('practice-view__question-area')
-#         element.screenshot((f'images/{title}.png'))
-
-#         # i+=1
-#         if clickNext.get_property('disabled'):
-#             nextButton = False
-#         else:
-#             clickNext.click()
-#     finally:
-#         print(nextButton)
-        
-# # albert.analyze()
-
-# print("done")
 
 driver.quit()
