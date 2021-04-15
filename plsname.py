@@ -76,7 +76,7 @@ for i in range(1,26):                   #works
     print(assignmentTitle.text)
 
     question = input("Do you want to copy this?: (Y/N): ")
-    if question == "Y":
+    if question == "Y" or "y":
         start = WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.XPATH,"//*[text()='View Questions']"))
         ).click()
@@ -86,13 +86,27 @@ for i in range(1,26):                   #works
                 clickNext = WebDriverWait(driver, 10).until(
                     EC.presence_of_element_located((By.XPATH, "//*[@id='app']/div/div[1]/div/div[3]/div[2]/div/div[2]/div/form/div[1]/div/button[2]"))
                  )
-                time.sleep(2)
+                time.sleep(1)
                 title = driver.find_element_by_xpath("//*[@id='app']/div/div[1]/div/div[3]/div[2]/div/div[2]/div/form/div[1]/div/div/h1/div/div")
                 title = title.text
-                title = title.replace(":","").replace("?","").replace("*","").replace("/","").replace("<","").replace(">","").strip()
+                title = title.replace(":","").replace("?","").replace("*","").replace("/","").replace("<","").replace(">","").replace('\n' ,"").strip()
+                driver.save_screenshot("temp_full_screenshot.png")
 
-                element = driver.find_element_by_class_name('practice-view__question-area')
-                element.screenshot((f'images/{title}.png'))
+                start_element = driver.find_element_by_class_name('question-wrapper__heading')
+                start_location = start_element.location
+                start_x = start_location['x']
+                start_y = start_location['y']
+                
+                end_element = driver.find_element_by_class_name('m-banner')
+                end_size = end_element.size
+                end_location = end_element.location
+                end_x = end_location['x'] + end_size['width']
+                end_y = end_location['y']
+
+                img = Image.open("temp_full_screenshot.png")
+                img = img.crop((start_x, start_y, end_x, end_y))
+                img.save(f'images/{title}.png')
+
 
                 # i+=1
                 if clickNext.get_property('disabled'):
@@ -101,7 +115,7 @@ for i in range(1,26):                   #works
                     clickNext.click()
             finally:
                 print(nextButton)
-    elif question == "N":
+    elif question == "N" or "n":
         pass
     else:
         driver.quit()
