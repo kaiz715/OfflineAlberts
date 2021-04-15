@@ -58,7 +58,7 @@ for i in range(len(assignments)):                   #works
     print(assignmentTitle.text)
 
     question = input("Do you want to copy this?: (Y/N): ")
-    if question == "Y" or "y":
+    if question == "Y" or question == "y":
         start = WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.XPATH,"//*[text()='View Questions']"))
         ).click()
@@ -96,7 +96,7 @@ for i in range(len(assignments)):                   #works
                     clickNext.click()
             finally:
                 print(nextButton)
-    elif question == "N" or "n":
+    elif question == "N" or question == "n":
         pass
     else:
         break
