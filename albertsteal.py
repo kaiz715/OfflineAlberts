@@ -8,7 +8,6 @@ from PIL import Image
 import config
 import time
 import albert
-import shutil
 import os
 import os.path
 
