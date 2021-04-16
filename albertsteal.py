@@ -35,23 +35,29 @@ password_field = password_field.find_element_by_tag_name('input')
 password_field.send_keys(password)
 password_field.send_keys(Keys.RETURN)
 
-calc = WebDriverWait(driver, 10).until(
+calc = WebDriverWait(driver, 10).until(#hello what is this#hello what is this
     EC.presence_of_element_located((By.ID, config.classID))
 ).click()
-
+#hello what is this#hello what is this#hello what is this
 finishedTab = WebDriverWait(driver,10).until(
     EC.presence_of_element_located((By.XPATH, "/html/body/div[2]/div/div/div[1]/div/div[3]/div/div[2]/div/div/div[1]/button[3]"))
-).click()
+).click()#hello what is thisv#hello what is this#hello what is this
 
-assignments = WebDriverWait(driver, 10).until(             
+assignments = WebDriverWait(driver, 10).until(             #hello what is this
     EC.presence_of_all_elements_located((By.CLASS_NAME, "sg-table__tr--link"))
 )
-
-for i in range(len(assignments)):                   #works
+#hello what is this
+#hello what is this
+#hello what is this
+#hello what is this
+#hello what is this
+#hello what is this#hello what is this
+#hello what is this
+for i in range(len(assignments)):                   #works#hello what is this#hello what is this
     xpath = '//*[@id="app"]/div/div[1]/div/div[3]/div/div[2]/div/div/div[2]/div/div[1]/div[2]/table/tbody/tr[{}]'.format(i+1)
-    time.sleep(1.25)
-    assignment = driver.find_element_by_xpath(xpath)
-    assignment.click()
+    time.sleep(1.25)#hello what is this
+    assignment = driver.find_element_by_xpath(xpath) #hello what is this
+    assignment.click() #hello what is this
     
     assignmentTitle = WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.CLASS_NAME, "u-mar-b_1"))
@@ -60,7 +66,7 @@ for i in range(len(assignments)):                   #works
     try:
         os.mkdir(f'images/{assignmentTitle}')
     except Exception as exception:
-        print(exception)
+        print(exception)#hello what is this#hello what is this#hello what is this
     print(assignmentTitle)
 
     question = input("Do you want to copy this?: (Y/N): ")
@@ -69,7 +75,7 @@ for i in range(len(assignments)):                   #works
             EC.presence_of_element_located((By.XPATH,"//*[text()='View Questions']"))
         ).click()
         nextButton = True
-        while nextButton:
+        while nextButton:#hello what is this
             try: 
                 clickNext = WebDriverWait(driver, 10).until(
                     EC.presence_of_element_located((By.XPATH, "//*[@id='app']/div/div[1]/div/div[3]/div[2]/div/div[2]/div/form/div[1]/div/button[2]"))
