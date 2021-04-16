@@ -59,14 +59,16 @@ for i in range(len(assignments)):                   #works
         EC.presence_of_element_located((By.CLASS_NAME, "u-mar-b_1"))
     ).text
     assignmentTitle = assignmentTitle.replace(":","").replace('/',' ').replace("?","").replace("*","").replace("/","").replace("<","").replace(">","").replace('\n' ,"").replace('\\', '').strip()
-    try:
-        os.mkdir(f'images/{assignmentTitle}')
-    except Exception as exception:
-        print(exception)
+    
     print(assignmentTitle)
 
     question = input("Do you want to copy this?: (Y/N): ")
     if question == "Y" or question == "y":
+        try:
+            os.mkdir(f'images/{assignmentTitle}')
+        except Exception as exception:
+            print(exception)
+               
         start = WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.XPATH,"//*[text()='View Questions']"))
         ).click()
