@@ -9,12 +9,13 @@ import config
 import time
 import albert
 import shutil
+import os
 import os.path
 
 email = config.email
 password = config.password
 chrome_options = Options()
-chrome_options.add_argument("--window-size=1900,5000")
+chrome_options.add_argument("--window-size=5000,5000")
 driver = webdriver.Chrome(config.path, chrome_options=chrome_options)
 
 driver.get("https://www.albert.io/log-in/")
@@ -27,6 +28,7 @@ email_field = driver.find_element_by_id("identifierId")
 email_field.send_keys(email)
 email_field.send_keys(Keys.RETURN)
 
+time.sleep(5)
 password_field = WebDriverWait(driver, 10).until(
     EC.presence_of_element_located((By.ID, 'password'))
 )
@@ -48,14 +50,19 @@ assignments = WebDriverWait(driver, 10).until(
 
 for i in range(len(assignments)):                   #works
     xpath = '//*[@id="app"]/div/div[1]/div/div[3]/div/div[2]/div/div/div[2]/div/div[1]/div[2]/table/tbody/tr[{}]'.format(i+1)
-    time.sleep(1)
+    time.sleep(1.25)
     assignment = driver.find_element_by_xpath(xpath)
     assignment.click()
     
     assignmentTitle = WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.CLASS_NAME, "u-mar-b_1"))
-    )
-    print(assignmentTitle.text)
+    ).text
+    assignmentTitle = assignmentTitle.replace(":","").replace('/',' ').replace("?","").replace("*","").replace("/","").replace("<","").replace(">","").replace('\n' ,"").replace('\\', '').strip()
+    try:
+        os.mkdir(f'images/{assignmentTitle}')
+    except Exception as exception:
+        print(exception)
+    print(assignmentTitle)
 
     question = input("Do you want to copy this?: (Y/N): ")
     if question == "Y" or question == "y":
@@ -71,8 +78,8 @@ for i in range(len(assignments)):                   #works
                 time.sleep(1)
                 title = driver.find_element_by_xpath("//*[@id='app']/div/div[1]/div/div[3]/div[2]/div/div[2]/div/form/div[1]/div/div/h1/div/div")
                 title = title.text
-                title = title.replace(":","").replace("?","").replace("*","").replace("/","").replace("<","").replace(">","").replace('\n' ,"").strip()
-                driver.save_screenshot("temp_full_screenshot.png")
+                title = title.replace(":","").replace('/',' ').replace("?","").replace("*","").replace("/","").replace("<","").replace(">","").replace('\n' ,"").replace('\\', '').strip()
+                driver.save_screenshot(f'images/{assignmentTitle}/{title}.png')
 
                 start_element = driver.find_element_by_class_name('question-wrapper__heading')
                 start_location = start_element.location
@@ -85,9 +92,9 @@ for i in range(len(assignments)):                   #works
                 end_x = end_location['x'] + end_size['width']
                 end_y = end_location['y']
 
-                img = Image.open("temp_full_screenshot.png")
+                img = Image.open(f'images/{assignmentTitle}/{title}.png')
                 img = img.crop((start_x, start_y, end_x, end_y))
-                img.save(f'images/{title}.png')
+                img.save(f'images/{assignmentTitle}/{title}.png')
 
 
                 if clickNext.get_property('disabled'):
