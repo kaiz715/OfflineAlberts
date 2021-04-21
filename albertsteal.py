@@ -73,7 +73,6 @@ for i in range(len(assignments)):                   #works
             EC.presence_of_element_located((By.XPATH,"//*[text()='View Questions']"))
         ).click()
         
-        titleList = []
         nextButton = True
         while nextButton:
             try: 
@@ -85,15 +84,9 @@ for i in range(len(assignments)):                   #works
                 title = title.text
                 title = title.replace(":","").replace('/',' ').replace("?","").replace("*","").replace("/","").replace("<","").replace(">","").replace('\n' ,"").replace('\\', '').strip()
 
-                titleList.append(title)
-                for titles in titleList:
-                    if titleList.count(title) > 1:
-                        titleList[len(titleList) - 1] = title + str(i)
-                        title = title + str(i)
-
-                # if os.path.isfile(f'//images/{assignmentTitle}/{title}.png'):
-                #     title = title + str(i)
-                #     i += 1
+                if os.path.isfile(f'images/{assignmentTitle}/{title}.png'):
+                    title = title + str(i)
+                    i += 1
 
                 driver.save_screenshot(f'images/{assignmentTitle}/{title}.png')
 
