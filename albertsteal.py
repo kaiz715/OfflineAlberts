@@ -72,6 +72,8 @@ for i in range(len(assignments)):                   #works
         start = WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.XPATH,"//*[text()='View Questions']"))
         ).click()
+        
+        titleList = []
         nextButton = True
         while nextButton:
             try: 
@@ -82,6 +84,17 @@ for i in range(len(assignments)):                   #works
                 title = driver.find_element_by_xpath("//*[@id='app']/div/div[1]/div/div[3]/div[2]/div/div[2]/div/form/div[1]/div/div/h1/div/div")
                 title = title.text
                 title = title.replace(":","").replace('/',' ').replace("?","").replace("*","").replace("/","").replace("<","").replace(">","").replace('\n' ,"").replace('\\', '').strip()
+
+                titleList.append(title)
+                for titles in titleList:
+                    if titleList.count(title) > 1:
+                        titleList[len(titleList) - 1] = title + str(i)
+                        title = title + str(i)
+
+                # if os.path.isfile(f'//images/{assignmentTitle}/{title}.png'):
+                #     title = title + str(i)
+                #     i += 1
+
                 driver.save_screenshot(f'images/{assignmentTitle}/{title}.png')
 
                 start_element = driver.find_element_by_class_name('question-wrapper__heading')
@@ -105,6 +118,7 @@ for i in range(len(assignments)):                   #works
                     nextButton = False
                 else:
                     clickNext.click()
+
             finally:
                 print(nextButton)
     elif question == "N" or question == "n":
