@@ -159,8 +159,7 @@ def pageNavigation():
                 for link in assignments.values():
                     assignmentLoader(link)
             else:
-                link = assignments[to_be_copied]
-                assignmentLoader(link)
+                assignmentLoader(assignments[to_be_copied])
         except:
             print("Invalid Assignment Key")
         
