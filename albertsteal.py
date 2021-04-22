@@ -73,6 +73,7 @@ def assignmentLoader():
             ).click()
             
             nextButton = True
+            k = 2
             while nextButton:
                 try: 
                     clickNext = WebDriverWait(driver, 10).until(
@@ -84,8 +85,8 @@ def assignmentLoader():
                     title = title.replace(":","").replace('/',' ').replace("?","").replace("*","").replace("/","").replace("<","").replace(">","").replace('\n' ,"").replace('\\', '').strip()
 
                     if os.path.isfile(f'images/{assignmentTitle}/{title}.png'):
-                        title = title + str(i)
-                        i += 1
+                        title = title + str(k)
+                        k += 1
 
                     driver.save_screenshot(f'images/{assignmentTitle}/{title}.png')
 
