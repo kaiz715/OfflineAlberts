@@ -11,8 +11,6 @@ import albert
 import os
 import os.path
 
-
-
 def assignmentLoader():
     assignments = WebDriverWait(driver, 10).until(
         EC.presence_of_all_elements_located((By.CLASS_NAME, "sg-table__tr--link"))
@@ -105,10 +103,10 @@ def pageNavigation():
         print("Something didn't work")
 
 def masterController():
-    continueProgram = True
-    while continueProgram == True or continueProgram == "true":
+    continueProgram = "Y"
+    while continueProgram == "Y" or continueProgram == "y":
         pageNavigation()
-        continueProgram = input("Would you like to continue this program?: (True/False): ") #any response other than "True" will end program
+        continueProgram = input("Would you like to continue this program?: (Y/N): ") #any response other than "Y" will end program
 
 
 if __name__ == "__main__":
@@ -143,6 +141,8 @@ if __name__ == "__main__":
     finishedTab = WebDriverWait(driver,10).until(
         EC.presence_of_element_located((By.XPATH, "/html/body/div[2]/div/div/div[1]/div/div[3]/div/div[2]/div/div/div[1]/button[3]"))
     ).click()
+
+
     masterController()
 
     driver.quit()
