@@ -11,37 +11,7 @@ import albert
 import os
 import os.path
 
-email = config.email
-password = config.password
-chrome_options = Options()
-chrome_options.add_argument("--window-size=5000,5000")
-driver = webdriver.Chrome(config.path, chrome_options=chrome_options)
 
-driver.get("https://www.albert.io/log-in/")
-
-link = WebDriverWait(driver, 10).until(
-    EC.presence_of_element_located((By.LINK_TEXT, "LOG IN WITH GOOGLE"))
-).click()
-
-email_field = driver.find_element_by_id("identifierId")
-email_field.send_keys(email)
-email_field.send_keys(Keys.RETURN)
-#blah
-time.sleep(5)
-password_field = WebDriverWait(driver, 10).until(
-    EC.presence_of_element_located((By.ID, 'password'))
-)
-password_field = password_field.find_element_by_tag_name('input')
-password_field.send_keys(password)
-password_field.send_keys(Keys.RETURN)
-
-calc = WebDriverWait(driver, 10).until(
-    EC.presence_of_element_located((By.ID, config.classID))
-).click()
-
-finishedTab = WebDriverWait(driver,10).until(
-    EC.presence_of_element_located((By.XPATH, "/html/body/div[2]/div/div/div[1]/div/div[3]/div/div[2]/div/div/div[1]/button[3]"))
-).click()
 
 def assignmentLoader():
     assignments = WebDriverWait(driver, 10).until(
@@ -88,6 +58,7 @@ def assignmentLoader():
                         title = title + str(k)
                         k += 1
 
+                    #Screenshot code portion
                     driver.save_screenshot(f'images/{assignmentTitle}/{title}.png')
 
                     start_element = driver.find_element_by_class_name('question-wrapper__heading')
@@ -130,9 +101,8 @@ def pageNavigation():
 
         driver.find_element_by_tag_name('body').send_keys(Keys.CONTROL + Keys.HOME)
         assignmentLoader()
-    except:
+    except Exception:
         print("Something didn't work")
-        pass
 
 def masterController():
     continueProgram = True
@@ -140,6 +110,39 @@ def masterController():
         pageNavigation()
         continueProgram = input("Would you like to continue this program?: (True/False): ") #any response other than "True" will end program
 
-masterController()
 
-driver.quit()
+if __name__ == "__main__":
+    email = config.email
+    password = config.password
+    chrome_options = Options()
+    chrome_options.add_argument("--window-size=5000,5000")
+    driver = webdriver.Chrome(config.path, chrome_options=chrome_options)
+
+    driver.get("https://www.albert.io/log-in/")
+
+    link = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.LINK_TEXT, "LOG IN WITH GOOGLE"))
+    ).click()
+
+    email_field = driver.find_element_by_id("identifierId")
+    email_field.send_keys(email)
+    email_field.send_keys(Keys.RETURN)
+    #blah
+    time.sleep(5)
+    password_field = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.ID, 'password'))
+    )
+    password_field = password_field.find_element_by_tag_name('input')
+    password_field.send_keys(password)
+    password_field.send_keys(Keys.RETURN)
+
+    calc = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.ID, config.classID))
+    ).click()
+
+    finishedTab = WebDriverWait(driver,10).until(
+        EC.presence_of_element_located((By.XPATH, "/html/body/div[2]/div/div/div[1]/div/div[3]/div/div[2]/div/div/div[1]/button[3]"))
+    ).click()
+    masterController()
+
+    driver.quit()
