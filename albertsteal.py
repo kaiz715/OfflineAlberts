@@ -125,6 +125,7 @@ def assignmentLoader(link):
             finally:
                 continue
         print("Finished Copying: " + assignmentTitle + "\n")
+        driver.back()
 
 
 def pageNavigation():
@@ -144,15 +145,27 @@ def pageNavigation():
             assignments[
                 driver.find_element_by_xpath(f'//tr[@href="{link}"]/td[2]/div').text
             ] = link
-        print(assignments.keys())
-        driver.find_element_by_tag_name("body").send_keys(Keys.CONTROL + Keys.HOME)
-        to_be_copied = input('which one do you want to copy? enter "all" if you want to copy all of them. ')
-        if to_be_copied == 'all':
-            for link in assignments.values():
+
+        # print(assignments.keys())
+        print("Assignments: ")
+        for assignment in assignments:
+            print(assignment)
+        
+        # driver.find_element_by_tag_name("body").send_keys(Keys.CONTROL + Keys.HOME)
+        
+        to_be_copied = input('Which one do you want to copy? enter "all" if you want to copy all of them: ')
+        try: 
+            if to_be_copied == 'all':
+                for link in assignments.values():
+                    assignmentLoader(link)
+            else:
+                link = assignments[to_be_copied]
                 assignmentLoader(link)
+        except:
+            print("Invalid Assignment Key")
+        
     except Exception as exception:
         print(exception)
-        print("Something didn't work")
 
 
 def masterController():
@@ -160,8 +173,8 @@ def masterController():
     while continueProgram == "Y" or continueProgram == "y":
         pageNavigation()
         continueProgram = input(
-            "Would you like to continue this program?: (True/False): "
-        )  # any response other than "True" will end program
+            "Would you like to continue this program?: (Y/N): "
+        )  # any response other than "Y" will end program
 
 
 if __name__ == "__main__":
@@ -191,7 +204,7 @@ if __name__ == "__main__":
     password_field.send_keys(password)
     password_field.send_keys(Keys.RETURN)
 
-    calc = (
+    class_wanted = (
         WebDriverWait(driver, 10)
         .until(EC.presence_of_element_located((By.ID, config.classID)))
         .click()
