@@ -130,10 +130,20 @@ def assignmentLoader(link):
 
 def pageNavigation():
     try:
-        # page = input("Assignment page to begin: (1/2/3...): ")
-        # nextAssignmentList = WebDriverWait(driver, 10).until(
-        #     EC.presence_of_element_located((By.XPATH, f'//*[@id="app"]/div/div[1]/div/div[3]/div/div[2]/div/div/div[2]/div/div[2]/div/div[{page}]'))
-        # ).click()
+        try:
+            page_button_locator = WebDriverWait(driver, 2).until(
+                EC.presence_of_element_located((By.XPATH, f'//*[@id="app"]/div/div[1]/div/div[3]/div/div[2]/div/div/div[2]/div/div[2]/div/div[1]'))
+            )
+            try:
+                page = input("Assignment page to begin: (1/2/3...): ")
+                page_button_locator = driver.find_element_by_xpath((f'//*[@id="app"]/div/div[1]/div/div[3]/div/div[2]/div/div/div[2]/div/div[2]/div/div[{page}]'))
+                page_button_locator.click()
+                driver.find_element_by_tag_name("body").send_keys(Keys.CONTROL + Keys.HOME)
+            except:
+                print("Invalid Page Number. Continuing with page 1")
+        except:
+            pass
+
         assignments = {}
         time.sleep(1)
         all_assignments_elements = WebDriverWait(driver, 10).until(
@@ -146,12 +156,9 @@ def pageNavigation():
                 driver.find_element_by_xpath(f'//tr[@href="{link}"]/td[2]/div').text
             ] = link
 
-        # print(assignments.keys())
         print("Assignments: ")
         for assignment in assignments:
             print(assignment)
-        
-        # driver.find_element_by_tag_name("body").send_keys(Keys.CONTROL + Keys.HOME)
         
         to_be_copied = input('Which one do you want to copy? enter "all" if you want to copy all of them: ')
         try: 
