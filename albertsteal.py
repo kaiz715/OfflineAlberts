@@ -13,17 +13,6 @@ import os.path
 
 
 def assignmentLoader(link):
-    # assignments = WebDriverWait(driver, 10).until(
-    #     EC.presence_of_all_elements_located((By.CLASS_NAME, "sg-table__tr--link"))
-    # )
-
-    # for i in range(len(assignments)):  # works
-    #     xpath = '//*[@id="app"]/div/div[1]/div/div[3]/div/div[2]/div/div/div[2]/div/div[1]/div[2]/table/tbody/tr[{}]'.format(
-    #         i + 1
-    #     )
-    #     time.sleep(1.25)
-    #     assignment = driver.find_element_by_xpath(xpath)
-    #     assignment.click()
         driver.get('https://albert.io' + link)
         assignmentTitle = (
             WebDriverWait(driver, 10)
@@ -43,10 +32,6 @@ def assignmentLoader(link):
             .strip()
         )
 
-        # print(assignmentTitle)
-
-        # question = input("Do you want to copy this?: (Y/N): ")
-        # if question == "Y" or question == "y":
         try:
             os.mkdir(f"images/{assignmentTitle}")
         except Exception as exception:
@@ -62,6 +47,7 @@ def assignmentLoader(link):
             .click()
         )
 
+        # Loops through all questions in assignment and takes screenshot
         nextButton = True
         k = 2
         while nextButton:
@@ -92,6 +78,7 @@ def assignmentLoader(link):
                     .strip()
                 )
 
+                # Checks for same question titles to prevent overwritting files
                 if os.path.isfile(f"images/{assignmentTitle}/{title}.png"):
                     title = title + str(k)
                     k += 1
@@ -112,7 +99,6 @@ def assignmentLoader(link):
                 end_x = end_location["x"] + end_size["width"]
                 end_y = end_location["y"]
 
-                # check if question titles are the same
                 img = Image.open(f"images/{assignmentTitle}/{title}.png")
                 img = img.crop((start_x, start_y, end_x, end_y))
                 img.save(f"images/{assignmentTitle}/{title}.png")
@@ -130,27 +116,28 @@ def assignmentLoader(link):
 
 def pageNavigation():
     try:
-        try:
-            page_button_locator = WebDriverWait(driver, 2).until(
+        try:    #checks if there is more than 1 assignment page, if so: asks which page to start on.
+            page_button_locator = WebDriverWait(driver, 2).until(       # Makes sure presense of more than 1 page as to not prompt if only 1 page
                 EC.presence_of_element_located((By.XPATH, f'//*[@id="app"]/div/div[1]/div/div[3]/div/div[2]/div/div/div[2]/div/div[2]/div/div[1]'))
             )
-            try:
+            try:    #assuming there is more than 1, asks which page to go to
                 page = input("Assignment page to begin: (1/2/3...): ")
                 page_button_locator = driver.find_element_by_xpath((f'//*[@id="app"]/div/div[1]/div/div[3]/div/div[2]/div/div/div[2]/div/div[2]/div/div[{page}]'))
                 page_button_locator.click()
-                driver.find_element_by_tag_name("body").send_keys(Keys.CONTROL + Keys.HOME)
+                driver.find_element_by_tag_name("body").send_keys(Keys.CONTROL + Keys.HOME) #scrolls to the top because selenium had issues clicking if the element wasn't on page
             except:
                 print("Invalid Page Number. Continuing with page 1")
         except:
             pass
 
+        # Loads all assignments and add to a library
         assignments = {}
         time.sleep(1)
         all_assignments_elements = WebDriverWait(driver, 10).until(
             EC.presence_of_all_elements_located((By.CLASS_NAME, "sg-table__tr--link"))
         )
 
-        for assignment_element in all_assignments_elements:
+        for assignment_element in all_assignments_elements: # Christian note: 'Assignment Name' is key; 'Link' is value 
             link = assignment_element.get_attribute("href")
             assignments[
                 driver.find_element_by_xpath(f'//tr[@href="{link}"]/td[2]/div').text
@@ -160,9 +147,10 @@ def pageNavigation():
         for assignment in assignments:
             print(assignment)
         
+        # Assignment selection
         to_be_copied = input('Which one do you want to copy? enter "all" if you want to copy all of them: ')
         try: 
-            if to_be_copied == 'all':
+            if to_be_copied.casefold() == 'all':
                 for link in assignments.values():
                     assignmentLoader(link)
             else:
@@ -171,7 +159,7 @@ def pageNavigation():
             print("Invalid Assignment Key")
         
     except Exception as exception:
-        print(exception)
+        print(exception) # <-- have we ever needed this? 
 
 
 def masterController():
@@ -185,7 +173,7 @@ def masterController():
 
 if __name__ == "__main__":
     check_login = False
-    while not check_login:
+    while not check_login:  #this block opens the webdriver and if anything goes wrong, closes it and tries again
         try:
             email = config.email
             password = config.password
@@ -204,7 +192,7 @@ if __name__ == "__main__":
             email_field = driver.find_element_by_id("identifierId")
             email_field.send_keys(email)
             email_field.send_keys(Keys.RETURN)
-            # blah
+
             time.sleep(5)
             password_field = WebDriverWait(driver, 10).until(
                 EC.presence_of_element_located((By.ID, "password"))
@@ -222,10 +210,9 @@ if __name__ == "__main__":
         except:
             driver.quit()
 
-    finishedTab = WebDriverWait(driver,10).until(
+    finished_assignments_tab = WebDriverWait(driver,10).until(
         EC.presence_of_element_located((By.XPATH, "/html/body/div[2]/div/div/div[1]/div/div[3]/div/div[2]/div/div/div[1]/button[3]"))
     ).click()
-
 
     masterController()
 
