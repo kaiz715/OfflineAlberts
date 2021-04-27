@@ -6,6 +6,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
 from multiprocessing.dummy import Pool as ThreadPool
 from PIL import Image
+from tools import divide_chunks
 import config
 import time
 import albert
@@ -49,106 +50,107 @@ def starter():
         driver.quit()
     return driver
 
-def assignmentLoader(link):
+def assignmentLoader(links):
     driver = starter()
-    driver.get('https://albert.io' + link)
-    assignmentTitle = (
-        WebDriverWait(driver, 10)
-        .until(EC.presence_of_element_located((By.CLASS_NAME, "u-mar-b_1")))
-        .text
-    )
-    assignmentTitle = (
-        assignmentTitle.replace(":", "")
-        .replace("/", " ")
-        .replace("?", "")
-        .replace("*", "")
-        .replace("/", "")
-        .replace("<", "")
-        .replace(">", "")
-        .replace("\n", "")
-        .replace("\\", "")
-        .strip()
-    )
-
-    try:
-        os.mkdir(f"images/{assignmentTitle}")
-    except Exception as exception:
-        print(exception)
-
-    start = (
-        WebDriverWait(driver, 10)
-        .until(
-            EC.presence_of_element_located(
-                (By.XPATH, "//*[text()='View Questions']")
-            )
+    for link in links:
+        driver.get('https://albert.io' + link)
+        assignmentTitle = (
+            WebDriverWait(driver, 10)
+            .until(EC.presence_of_element_located((By.CLASS_NAME, "u-mar-b_1")))
+            .text
         )
-        .click()
-    )
+        assignmentTitle = (
+            assignmentTitle.replace(":", "")
+            .replace("/", " ")
+            .replace("?", "")
+            .replace("*", "")
+            .replace("/", "")
+            .replace("<", "")
+            .replace(">", "")
+            .replace("\n", "")
+            .replace("\\", "")
+            .strip()
+        )
 
-    # Loops through all questions in assignment and takes screenshot
-    nextButton = True
-    k = 2
-    while nextButton:
         try:
-            clickNext = WebDriverWait(driver, 10).until(
+            os.mkdir(f"images/{assignmentTitle}")
+        except Exception as exception:
+            print(exception)
+
+        start = (
+            WebDriverWait(driver, 10)
+            .until(
                 EC.presence_of_element_located(
-                    (
-                        By.XPATH,
-                        "//*[@id='app']/div/div[1]/div/div[3]/div[2]/div/div[2]/div/form/div[1]/div/button[2]",
-                    )
+                    (By.XPATH, "//*[text()='View Questions']")
                 )
             )
-            time.sleep(1)
-            title = driver.find_element_by_xpath(
-                "//*[@id='app']/div/div[1]/div/div[3]/div[2]/div/div[2]/div/form/div[1]/div/div/h1/div/div"
-            )
-            title = title.text
-            title = (
-                title.replace(":", "")
-                .replace("/", " ")
-                .replace("?", "")
-                .replace("*", "")
-                .replace("/", "")
-                .replace("<", "")
-                .replace(">", "")
-                .replace("\n", "")
-                .replace("\\", "")
-                .strip()
-            )
+            .click()
+        )
 
-            # Checks for same question titles to prevent overwritting files
-            if os.path.isfile(f"images/{assignmentTitle}/{title}.png"):
-                title = title + str(k)
-                k += 1
+        # Loops through all questions in assignment and takes screenshot
+        nextButton = True
+        k = 2
+        while nextButton:
+            try:
+                clickNext = WebDriverWait(driver, 10).until(
+                    EC.presence_of_element_located(
+                        (
+                            By.XPATH,
+                            "//*[@id='app']/div/div[1]/div/div[3]/div[2]/div/div[2]/div/form/div[1]/div/button[2]",
+                        )
+                    )
+                )
+                time.sleep(1)
+                title = driver.find_element_by_xpath(
+                    "//*[@id='app']/div/div[1]/div/div[3]/div[2]/div/div[2]/div/form/div[1]/div/div/h1/div/div"
+                )
+                title = title.text
+                title = (
+                    title.replace(":", "")
+                    .replace("/", " ")
+                    .replace("?", "")
+                    .replace("*", "")
+                    .replace("/", "")
+                    .replace("<", "")
+                    .replace(">", "")
+                    .replace("\n", "")
+                    .replace("\\", "")
+                    .strip()
+                )
 
-            # Screenshot code portion
-            driver.save_screenshot(f"images/{assignmentTitle}/{title}.png")
+                # Checks for same question titles to prevent overwritting files
+                if os.path.isfile(f"images/{assignmentTitle}/{title}.png"):
+                    title = title + str(k)
+                    k += 1
 
-            start_element = driver.find_element_by_class_name(
-                "question-wrapper__heading"
-            )
-            start_location = start_element.location
-            start_x = start_location["x"]
-            start_y = start_location["y"]
+                # Screenshot code portion
+                driver.save_screenshot(f"images/{assignmentTitle}/{title}.png")
 
-            end_element = driver.find_element_by_class_name("m-banner")
-            end_size = end_element.size
-            end_location = end_element.location
-            end_x = end_location["x"] + end_size["width"]
-            end_y = end_location["y"]
+                start_element = driver.find_element_by_class_name(
+                    "question-wrapper__heading"
+                )
+                start_location = start_element.location
+                start_x = start_location["x"]
+                start_y = start_location["y"]
 
-            img = Image.open(f"images/{assignmentTitle}/{title}.png")
-            img = img.crop((start_x, start_y, end_x, end_y))
-            img.save(f"images/{assignmentTitle}/{title}.png")
+                end_element = driver.find_element_by_class_name("m-banner")
+                end_size = end_element.size
+                end_location = end_element.location
+                end_x = end_location["x"] + end_size["width"]
+                end_y = end_location["y"]
 
-            if clickNext.get_property("disabled"):
-                nextButton = False
-            else:
-                clickNext.click()
+                img = Image.open(f"images/{assignmentTitle}/{title}.png")
+                img = img.crop((start_x, start_y, end_x, end_y))
+                img.save(f"images/{assignmentTitle}/{title}.png")
 
-        finally:
-            continue
-    print("Finished Copying: " + assignmentTitle + "\n")
+                if clickNext.get_property("disabled"):
+                    nextButton = False
+                else:
+                    clickNext.click()
+
+            finally:
+                continue
+        print("Finished Copying: " + assignmentTitle + "\n")
     driver.quit()
 
 
@@ -184,12 +186,19 @@ def pageNavigation():
         print("Assignments: ")
         for assignment in assignments.keys():
             print(assignment)
-        
+        driver.get('https://albert.io' + list(assignments.values())[0])
+
+        global cookies
+        cookies = driver.get_cookies()
+
         # Assignment selection
         to_be_copied = input('Which one do you want to copy? enter "all" if you want to copy all of them: ')
+        num_threads = int(input('How many threads you you want to run? '))
+        links = list(assignments.values())
+        split_links = list(divide_chunks(links, num_threads))
         if to_be_copied.casefold() == 'all':
-            pool = ThreadPool(4)
-            pool.map(assignmentLoader, assignments.values())
+            pool = ThreadPool(num_threads)
+            pool.map(assignmentLoader, split_links)
         else:
             assignmentLoader(assignments[to_be_copied])
         
@@ -204,7 +213,6 @@ def masterController():
         continueProgram = input(
             "Would you like to continue this program?: (Y/N): "
         )  # any response other than "Y" will end program
-
 
 
 if __name__ == "__main__":
@@ -249,6 +257,8 @@ if __name__ == "__main__":
     finished_assignments_tab = WebDriverWait(driver,10).until(
         EC.presence_of_element_located((By.XPATH, "/html/body/div[2]/div/div/div[1]/div/div[3]/div/div[2]/div/div/div[1]/button[3]"))
     ).click()
+    
+    cookies = {}
 
     masterController()
 
