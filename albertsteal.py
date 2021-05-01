@@ -188,9 +188,6 @@ def pageNavigation():
             print(assignment)
         driver.get('https://albert.io' + list(assignments.values())[0])
 
-        global cookies
-        cookies = driver.get_cookies()
-
         # Assignment selection
         to_be_copied = input('Which one do you want to copy? enter "all" if you want to copy all of them: ')
         num_threads = int(input('How many threads you you want to run? '))
