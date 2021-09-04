@@ -18,7 +18,7 @@ def starter():
     email = config.email
     password = config.password
     chrome_options = Options()
-    chrome_options.add_argument("--headless")
+    # chrome_options.add_argument("--headless")
     chrome_options.add_argument("--window-size=1920,10000")
     driver = webdriver.Chrome(chrome_options=chrome_options)
 
@@ -37,12 +37,14 @@ def starter():
 
 def assignment_scraper(link):
     driver = starter()
-    driver.get(link)
     time.sleep(2)
+    driver.get(link)
+    time.sleep(3)
     assignment_title = driver.find_element_by_name("og:description").get_attribute(
         "content"
     )
-    assignment_title = re.search('in topic "(.*)"', str(assignment_title)).group(1)
+    assignment_title = re.search(
+        'in topic "(.*)"', str(assignment_title)).group(1)
     assignment_title = (
         assignment_title.replace(":", "")
         .replace("/", " ")
@@ -77,7 +79,8 @@ def assignment_scraper(link):
         quesiton_title = driver.find_element_by_name("og:description").get_attribute(
             "content"
         )
-        quesiton_title = re.search('Practice question "(.*)" ', quesiton_title).group(1)
+        quesiton_title = re.search(
+            'Practice question "(.*)" ', quesiton_title).group(1)
 
         # makes title a valid directory name for windows
         quesiton_title = (
@@ -110,27 +113,45 @@ def assignment_scraper(link):
         time.sleep(0.5)
 
         # Screenshot code portion
-        driver.save_screenshot(
-            f"images/{assignment_title}/{quesiton_title + str(num)}.png"
+        # driver.save_screenshot(
+        #     f"images/{assignment_title}/{quesiton_title + str(num)}.png"
+        # )
+
+        # start_element = driver.find_element_by_class_name("question-wrapper__heading")
+        # start_location = start_element.location
+        # start_x = start_location["x"]
+        # start_y = start_location["y"]
+
+        # end_element = driver.find_element_by_class_name("m-banner__content")
+        # end_size = end_element.size
+        # end_location = end_element.location
+        # end_x = end_location["x"] + end_size["width"]
+        # end_y = end_location["y"]
+
+        # img = Image.open(f"images/{assignment_title}/{quesiton_title}.png")
+        # img = img.crop((start_x, start_y, end_x, end_y))
+        # img.save(f"images/{assignment_title}/{quesiton_title}.png")
+
+        # getting answer id
+        answers = WebDriverWait(driver, 10).until(     # is stored as a 'list'
+            EC.presence_of_all_elements_located(
+                (By.CLASS_NAME, "mcq-option-accessible-wrapper"))
         )
-
-        start_element = driver.find_element_by_class_name("question-wrapper__heading")
-        start_location = start_element.location
-        start_x = start_location["x"]
-        start_y = start_location["y"]
-
-        end_element = driver.find_element_by_class_name("m-banner__content")
-        end_size = end_element.size
-        end_location = end_element.location
-        end_x = end_location["x"] + end_size["width"]
-        end_y = end_location["y"]
-
-        img = Image.open(f"images/{assignment_title}/{quesiton_title}.png")
-        img = img.crop((start_x, start_y, end_x, end_y))
-        img.save(f"images/{assignment_title}/{quesiton_title}.png")
+        answer_ID_group = []  # each list contain 2 pieces of data. 1st includes the answer ID. 2nd inludes either 0 or 1. 0 denotes a wrong answer. 1 denotes the correct answer
+        for answer in answers:
+            answer_IDs = []
+            answer_IDs.append(answer.find_element_by_class_name(
+                "mcq-option__hidden-input").get_attribute("id"))
+            try:
+                answer.find_element_by_class_name("correctness-indicator-wrapper__indicator")
+                answer_IDs.append(1)    # if correct answer
+            except:
+                answer_IDs.append(0)    # if wrong answer
+            answer_ID_group.append(answer_IDs)
 
         # checks if theres a next question
-        click_next = driver.find_elements_by_class_name("a-button--tertiary")[1]
+        click_next = driver.find_elements_by_class_name(
+            "a-button--tertiary")[1]
         if click_next.get_property("disabled"):
             next_button = False
         else:
@@ -165,10 +186,13 @@ if __name__ == "__main__":
     course_names = []
     for course in courses:
         course_names.append(course.find_element_by_tag_name("a").text)
+
     # select course
     # answer with 1,2,3 ...
+
+    print("\nCourses: " + str(course_names))
     course_selection = (
-        int(input("which course would you like?:        " + str(course_names))) - 1
+        int(input("Which course would you like? (1/2/3...): ")) - 1
     )
     courses[course_selection].find_element_by_tag_name("a").click()
 
@@ -188,5 +212,5 @@ if __name__ == "__main__":
 
     for i in range(len(assignment_links)):
         assignment_scraper(assignment_links[i])
-        if input("Do you want to continue? (Y/N)  ") == "N":
+        if input("Do you want to continue? (Y/N): ") != "Y" or "y":
             break
