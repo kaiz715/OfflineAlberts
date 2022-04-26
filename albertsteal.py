@@ -36,7 +36,7 @@ def starter():
 
 
 # This thing gets screenshots of questions??
-def assignment_scraper(link):       # Whats link?? figure out later
+def assignment_scraper(link):
     driver = starter()  # Takes driver from starter and uses that
     time.sleep(2)
     driver.get(link)
@@ -183,7 +183,8 @@ if __name__ == "__main__":
         EC.presence_of_element_located((By.CLASS_NAME, "course-card__title"))
     )
     time.sleep(1)
-    courses = driver.find_elements_by_class_name("classrooms_viewer__list__item") # of type list
+    courses = driver.find_elements(by=By.CLASS_NAME, value="classrooms_viewer__list__item") # of type list
+    # courses = driver.find_elements_by_class_name("classrooms_viewer__list__item") # of type list
     course_names = []
     for course in courses:
         course_names.append(course.find_element_by_class_name("class-card__inner").text)
@@ -196,19 +197,47 @@ if __name__ == "__main__":
     )
     courses[course_selection].find_element_by_class_name("class-card__inner").click()
 
-    # get a list of assignments
+    # go to tab with closed assignments
     WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.CLASS_NAME, "sgi__content--topic"))
+        EC.presence_of_element_located((By.CLASS_NAME, "sg-tabs-wrapper"))
     )
-    assignments = driver.find_elements_by_class_name("sgi__content--topic")
+    print("FUCK                          YEA")
+    # assignmentsTab = driver.find_element(by=By.CLASS_NAME, value="sg-tabs sg-tabs--with-nested-content")
+    driver.find_element(by=By.XPATH, value='//*[@id="app"]/div/div[1]/div/div[3]/div/div[2]/div/div/div[1]/button[3]').click()  # I gave up with 'class'
 
-    assignment_links = []
-    for assignment in assignments:
-        assignment_links.append(
-            assignment.find_element_by_class_name(
-                "study-guide-heading-wrapper"
-            ).get_attribute("href")
-        )
+    # get a list of assignments
+    # WebDriverWait(driver, 10).until(
+    #     EC.presence_of_element_located((By.CLASS_NAME, "sgi__content--topic"))
+    # )
+    # assignments = driver.find_elements_by_class_name("sgi__content--topic")
+
+    WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.XPATH, '//*[@id="app"]/div/div[1]/div/div[3]/div/div[2]/div/div/div[2]/div/div[1]/div[2]/table/tbody'))   
+    )
+    print("FUCCKKCKKK EYA")
+    try: # janky AF but it kinda works
+        assignment_links = []
+        rando_fuck_int = 1
+        while rando_fuck_int < 100:
+            assignment = driver.find_element(by=By.XPATH, value='//*[@id="app"]/div/div[1]/div/div[3]/div/div[2]/div/div/div[2]/div/div[1]/div[2]/table/tbody/tr[{}]/td[2]'.format(rando_fuck_int))
+            assignment_links.append(assignment.text)
+            # print(assignment.text)
+            rando_fuck_int += 1
+    except Exception as e:
+        pass
+    print(assignment_links)
+
+
+    time.sleep(1000)
+
+    # assignment_links = []
+    # for assignment in assignments:
+    #     assignment_links.append(
+    #         assignment.find_element_by_class_name(
+    #             "study-guide-heading-wrapper"
+    #         ).get_attribute("href")
+    #     )
+        
 
     for i in range(len(assignment_links)):
         assignment_scraper(assignment_links[i])
