@@ -5,7 +5,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
 from multiprocessing.dummy import Pool as ThreadPool
-from PIL import Image
+# from PIL import Image
 from tools import divide_chunks
 import config
 import time
@@ -13,7 +13,7 @@ import os
 import os.path
 import re
 
-
+# Opens up Albert.IO
 def starter():
     email = config.email
     password = config.password
@@ -35,8 +35,9 @@ def starter():
     return driver
 
 
-def assignment_scraper(link):
-    driver = starter()
+# This thing gets screenshots of questions??
+def assignment_scraper(link):       # Whats link?? figure out later
+    driver = starter()  # Takes driver from starter and uses that
     time.sleep(2)
     driver.get(link)
     time.sleep(3)
@@ -45,7 +46,7 @@ def assignment_scraper(link):
     )
     assignment_title = re.search(
         'in topic "(.*)"', str(assignment_title)).group(1)
-    assignment_title = (
+    assignment_title = (    # goes pew pew to bad bad chars
         assignment_title.replace(":", "")
         .replace("/", " ")
         .replace("?", "")
@@ -112,7 +113,7 @@ def assignment_scraper(link):
         ).click()  # submit button
         time.sleep(0.5)
 
-        # Screenshot code portion
+        # Screenshot code portion [DO NOT DELETE]
         # driver.save_screenshot(
         #     f"images/{assignment_title}/{quesiton_title + str(num)}.png"
         # )
@@ -182,19 +183,18 @@ if __name__ == "__main__":
         EC.presence_of_element_located((By.CLASS_NAME, "course-card__title"))
     )
     time.sleep(1)
-    courses = driver.find_elements_by_class_name("course-card__title")
+    courses = driver.find_elements_by_class_name("classrooms_viewer__list__item") # of type list
     course_names = []
     for course in courses:
-        course_names.append(course.find_element_by_tag_name("a").text)
+        course_names.append(course.find_element_by_class_name("class-card__inner").text)
 
     # select course
     # answer with 1,2,3 ...
-
     print("\nCourses: " + str(course_names))
     course_selection = (
         int(input("Which course would you like? (1/2/3...): ")) - 1
     )
-    courses[course_selection].find_element_by_tag_name("a").click()
+    courses[course_selection].find_element_by_class_name("class-card__inner").click()
 
     # get a list of assignments
     WebDriverWait(driver, 10).until(
