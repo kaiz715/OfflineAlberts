@@ -26,7 +26,7 @@ class Question(Base):
     answer_2_id = Column("answer_2_id", String)
     answer_3_id = Column("answer_3_id", String)
     answer_4_id = Column("answer_4_id", String)
-    correct_answer = Column("correct_answer", String)
+    correct_answer = Column("correct_answer", Integer)
 
 Base.metadata.create_all(engine)
 Session = sessionmaker(bind=engine)

@@ -119,15 +119,14 @@ def assignment_scraper(link):
             )
         )
         answer_IDs = []  # each list contain 2 pieces of data. 1st includes the answer ID. 2nd inludes either 0 or 1. 0 denotes a wrong answer. 1 denotes the correct answer
-        correct_answer = ""
+        correct_answer = -1
         for answer in answers:
             answer_IDs.append(answer.find_element_by_class_name(
                 "mcq-option__hidden-input").get_attribute("id")
             )
             try:
                 answer.find_element_by_class_name("correctness-indicator-wrapper__indicator")  #the check mark
-                correct_answer = answer.find_element_by_class_name(
-                "mcq-option__hidden-input").get_attribute("id") # if correct answer
+                correct_answer = answers.index(answer) # if correct answer
             except Exception:
                 pass
         # saving answers in sql database
