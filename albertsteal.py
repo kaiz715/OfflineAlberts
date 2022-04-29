@@ -125,7 +125,7 @@ def assignment_scraper(link):
                 "mcq-option__hidden-input").get_attribute("id")
             )
             try:
-                answer.find_element_by_class_name("correctness-indicator-wrapper__indicator")  #the check mark
+                answer.find_element_by_class_name("correctness-indicator-wrapper__indicator--correct")  #the check mark
                 correct_answer = answers.index(answer) # if correct answer
             except Exception:
                 pass
