@@ -4,15 +4,31 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
-from multiprocessing.dummy import Pool as ThreadPool
-from PIL import Image
-from tools import divide_chunks
+from db import Question, Session
 import config
 import time
 import os
 import os.path
 import re
 
+def db_add_assignment(question_title, answer_1_id, answer_2_id, answer_3_id, answer_4_id, correct_answer):
+    session = Session()
+    if session.query(Question).filter_by(question_title=question_title).first() != None:
+        session.close
+        return -1
+
+    question = Question()
+    question.question_title = question_title
+    question.answer_1_id = answer_1_id
+    question.answer_2_id = answer_2_id
+    question.answer_3_id = answer_3_id
+    question.answer_4_id = answer_4_id
+    question.correct_answer = correct_answer
+    session.add(question)
+    session.commit()
+    session.close()
+
+    return 0
 
 def starter():
     email = config.email
@@ -40,31 +56,14 @@ def assignment_scraper(link):
     time.sleep(2)
     driver.get(link)
     time.sleep(3)
-    assignment_title = driver.find_element_by_name("og:description").get_attribute(
-        "content"
-    )
-    assignment_title = re.search(
-        'in topic "(.*)"', str(assignment_title)).group(1)
-    assignment_title = (
-        assignment_title.replace(":", "")
-        .replace("/", " ")
-        .replace("?", "")
-        .replace("*", "")
-        .replace("/", "")
-        .replace("<", "")
-        .replace(">", "")
-        .replace("_", "")
-        .replace("|", " ")
-        .replace("\n", "")
-        .replace("\\", "")
-        .strip()
-    )
+    assignment_title = driver.find_element_by_name("og:description").get_attribute("content")
+    assignment_title = re.search('in topic "(.*)"', str(assignment_title)).group(1)
 
     # makes a directory for the assignment
-    try:
-        os.mkdir(f"images/{assignment_title}")
-    except Exception as exception:
-        print(exception)
+    # try:
+    #     os.mkdir(f"images/{assignment_title}")
+    # except Exception as exception:
+    #     print(exception)
     # Loops through all questions in assignment and takes screenshot
     next_button = True
     while next_button:
@@ -76,40 +75,21 @@ def assignment_scraper(link):
                 )
             )
         )
-        quesiton_title = driver.find_element_by_name("og:description").get_attribute(
-            "content"
-        )
-        quesiton_title = re.search(
-            'Practice question "(.*)" ', quesiton_title).group(1)
-
-        # makes title a valid directory name for windows
-        quesiton_title = (
-            quesiton_title.replace(":", "")
-            .replace("/", " ")
-            .replace("?", "")
-            .replace("*", "")
-            .replace("/", "")
-            .replace("<", "")
-            .replace(">", "")
-            .replace("\n", "")
-            .replace("\\", "")
-            .strip()
-        )
+        quesiton_title = driver.find_element_by_name("og:description").get_attribute("content")
+        quesiton_title = re.search('Practice question "(.*)" ', quesiton_title).group(1)
         print(quesiton_title)
         # Checks for same question titles to prevent overwritting files
-        num = ""
-        if os.path.isfile(f"images/{assignment_title}/{quesiton_title}.png"):
-            num = 1
-        while os.path.isfile(
-            f"images/{assignment_title}/{quesiton_title + str(num)}.png"
-        ):
-            num += 1
+        # num = ""
+        # if os.path.isfile(f"images/{assignment_title}/{quesiton_title}.png"):
+        #     num = 1
+        # while os.path.isfile(
+        #     f"images/{assignment_title}/{quesiton_title + str(num)}.png"
+        # ):
+        #     num += 1
 
             # enters in a junk answer
         driver.find_element_by_class_name("mcq-option__letter").click()
-        driver.find_element_by_class_name(
-            "a-button--secondary"
-        ).click()  # submit button
+        driver.find_element_by_class_name("a-button--secondary").click()  # submit button
         time.sleep(0.5)
 
         # Screenshot code portion
@@ -135,23 +115,27 @@ def assignment_scraper(link):
         # getting answer id
         answers = WebDriverWait(driver, 10).until(     # is stored as a 'list'
             EC.presence_of_all_elements_located(
-                (By.CLASS_NAME, "mcq-option-accessible-wrapper"))
+                (By.CLASS_NAME, "mcq-option-accessible-wrapper")
+            )
         )
-        answer_ID_group = []  # each list contain 2 pieces of data. 1st includes the answer ID. 2nd inludes either 0 or 1. 0 denotes a wrong answer. 1 denotes the correct answer
+        answer_IDs = []  # each list contain 2 pieces of data. 1st includes the answer ID. 2nd inludes either 0 or 1. 0 denotes a wrong answer. 1 denotes the correct answer
+        correct_answer = ""
         for answer in answers:
-            answer_IDs = []
             answer_IDs.append(answer.find_element_by_class_name(
-                "mcq-option__hidden-input").get_attribute("id"))
+                "mcq-option__hidden-input").get_attribute("id")
+            )
             try:
-                answer.find_element_by_class_name("correctness-indicator-wrapper__indicator")
-                answer_IDs.append(1)    # if correct answer
-            except:
-                answer_IDs.append(0)    # if wrong answer
-            answer_ID_group.append(answer_IDs)
+                answer.find_element_by_class_name("correctness-indicator-wrapper__indicator")  #the check mark
+                correct_answer = answer.find_element_by_class_name(
+                "mcq-option__hidden-input").get_attribute("id") # if correct answer
+            except Exception:
+                pass
+        # saving answers in sql database
+        db_add_assignment(quesiton_title, answer_IDs[0], answer_IDs[1], answer_IDs[2], answer_IDs[3], correct_answer)
 
         # checks if theres a next question
-        click_next = driver.find_elements_by_class_name(
-            "a-button--tertiary")[1]
+        click_next = driver.find_elements_by_class_name("a-button--tertiary")[1]
+        
         if click_next.get_property("disabled"):
             next_button = False
         else:
@@ -183,9 +167,7 @@ if __name__ == "__main__":
     )
     time.sleep(1)
     courses = driver.find_elements_by_class_name("course-card__title")
-    course_names = []
-    for course in courses:
-        course_names.append(course.find_element_by_tag_name("a").text)
+    course_names = [course.find_element_by_tag_name("a").text for course in courses]
 
     # select course
     # answer with 1,2,3 ...
@@ -198,19 +180,13 @@ if __name__ == "__main__":
 
     # get a list of assignments
     WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.CLASS_NAME, "sgi__content--topic"))
+        EC.presence_of_element_located((By.CLASS_NAME, "sgi--topic"))
     )
-    assignments = driver.find_elements_by_class_name("sgi__content--topic")
+    assignments = driver.find_elements_by_class_name("sgi--topic") # each subunit problem set
 
-    assignment_links = []
-    for assignment in assignments:
-        assignment_links.append(
-            assignment.find_element_by_class_name(
-                "study-guide-heading-wrapper"
-            ).get_attribute("href")
-        )
+    assignment_links = [assignment.get_attribute("href") for assignment in assignments]
 
-    for i in range(len(assignment_links)):
-        assignment_scraper(assignment_links[i])
+    for assignment_link in assignment_links:
+        assignment_scraper(assignment_link)
         if input("Do you want to continue? (Y/N): ") != "Y" or "y":
             break
