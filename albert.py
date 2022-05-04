@@ -4,7 +4,6 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
-from db import Question, Session
 import config
 import time
 import os
@@ -40,6 +39,7 @@ def topic_copy(link):
     topic_title = driver.find_element_by_name("og:description").get_attribute("content")
     topic_title = re.search('in topic "(.*)"', str(topic_title)).group(1)
 
+    # do this to be writable in a windows directory
     topic_title = (    
         topic_title.replace(":", "")
         .replace("/", " ")
@@ -73,6 +73,8 @@ def topic_copy(link):
         )
         question_title = driver.find_element_by_name("og:description").get_attribute("content")
         question_title = re.search('Practice question "(.*)" ', question_title).group(1)
+        
+        # do this to be writable in a windows directory
         question_title = (    
         question_title.replace(":", "")
         .replace("/", " ")
@@ -88,62 +90,15 @@ def topic_copy(link):
         .strip()
     )
         print(question_title)
-        # Checks for same question titles to prevent overwritting files
-        # num = ""
-        # if os.path.isfile(f"images/{assignment_title}/{question_title}.png"):
-        #     num = 1
-        # while os.path.isfile(
-        #     f"images/{assignment_title}/{question_title + str(num)}.png"
-        # ):
-        #     num += 1
 
         # gets explaination of answer
         driver.find_element_by_class_name("mcq-option__letter").click()
         driver.find_element_by_class_name("a-button--secondary").click()  # submit button
         time.sleep(3)
 
+        # screenshots the question/explaination
         explaination = driver.find_element(by=By.CLASS_NAME, value='question-wrapper')
         explaination.screenshot(f"images/{topic_title}/{question_title}.png")
-
-        # Screenshot code portion
-        # driver.save_screenshot(
-        #     f"images/{assignment_title}/{quesiton_title + str(num)}.png"
-        # )
-
-        # start_element = driver.find_element_by_class_name("question-wrapper__heading")
-        # start_location = start_element.location
-        # start_x = start_location["x"]
-        # start_y = start_location["y"]
-
-        # end_element = driver.find_element_by_class_name("m-banner__content")
-        # end_size = end_element.size
-        # end_location = end_element.location
-        # end_x = end_location["x"] + end_size["width"]
-        # end_y = end_location["y"]
-
-        # img = Image.open(f"images/{assignment_title}/{quesiton_title}.png")
-        # img = img.crop((start_x, start_y, end_x, end_y))
-        # img.save(f"images/{assignment_title}/{quesiton_title}.png")
-
-        # getting answer id
-        # answers = WebDriverWait(driver, 10).until(     # is stored as a 'list'
-        #     EC.presence_of_all_elements_located(
-        #         (By.CLASS_NAME, "mcq-option-accessible-wrapper")
-        #     )
-        # )
-        # answer_IDs = []  # each list contain 2 pieces of data. 1st includes the answer ID. 2nd inludes either 0 or 1. 0 denotes a wrong answer. 1 denotes the correct answer
-        # correct_answer = -1
-        # for answer in answers:
-        #     answer_IDs.append(answer.find_element_by_class_name(
-        #         "mcq-option__hidden-input").get_attribute("id")
-        #     )
-        #     try:
-        #         answer.find_element_by_class_name("correctness-indicator-wrapper__indicator--correct")  #the check mark
-        #         correct_answer = answers.index(answer) # if correct answer
-        #     except Exception:
-        #         pass
-        # # saving answers in sql database
-        # db_add_assignment(quesiton_title, answer_IDs[0], answer_IDs[1], answer_IDs[2], answer_IDs[3], correct_answer)
 
         # checks if theres a next question
         click_next = driver.find_elements_by_class_name("a-button--tertiary")[1]
