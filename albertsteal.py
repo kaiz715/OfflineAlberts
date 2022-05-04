@@ -4,22 +4,20 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
-from multiprocessing.dummy import Pool as ThreadPool
-# from PIL import Image
-from tools import divide_chunks
 import config
 import time
 import os
 import os.path
-import re
 import csv
+
+getAllAssignments = False
 
 # Opens up Albert.IO
 def starter():
     email = config.email
     password = config.password
     chrome_options = Options()
-    # chrome_options.add_argument("--headless")
+    chrome_options.add_argument("--headless")   #Necessary for screenshots to work
     chrome_options.add_argument("--window-size=1920,10000")
     driver = webdriver.Chrome(options=chrome_options)
 
@@ -36,7 +34,7 @@ def starter():
     return driver
 
 
-# This thing gets screenshots of questions??
+# Get screenshots and answer IDs
 def assignment_scraper(link):
     driver = starter()  # Takes driver from starter and uses that
     driver.get(link)
@@ -78,31 +76,10 @@ def assignment_scraper(link):
     except Exception as exception:
         print(exception)
 
-    # # makes a CSV directory for the assignment
-    # try:
-    #     os.mkdir(f"csvFiles/{assignment_title}")
-    # except Exception as exception:
-    #     print(exception)
-
     # Loops through questions
     next_button = True
     answer_ID_group = []  # Each list contains 5 pieces of data [QuestionTitle, [AnswerA, right/wrong]x4]
     while next_button:
-        
-        # WebDriverWait(driver, 10).until(
-        #     EC.presence_of_element_located(
-        #         (
-        #             By.CLASS_NAME,
-        #             "a-button--tertiary",
-        #         )
-        #     )
-        # )
-        # quesiton_title = driver.find_element_by_name("og:description").get_attribute(
-        #     "content"
-        # )
-        # quesiton_title = re.search(
-        #     'Practice question "(.*)" ', quesiton_title).group(1)
-
         try:
             question_title = WebDriverWait(driver, 10).until(
                 EC.presence_of_element_located((By.XPATH, '//*[@id="app"]/div/div[1]/div/div[3]/div[2]/div/div[2]/div/form/div[1]/div/div/h1/div/div'))
@@ -123,41 +100,10 @@ def assignment_scraper(link):
             )
             print(question_title)
 
-            # # Checks for same question titles to prevent overwritting files
-            # num = ""
-            # if os.path.isfile(f"images/{assignment_title}/{quesiton_title}.png"):
-            #     num = 1
-            # while os.path.isfile(
-            #     f"images/{assignment_title}/{quesiton_title + str(num)}.png"
-            # ):
-            #     num += 1
-
-                # enters in a junk answer
-            # driver.find_element_by_class_name("mcq-option__letter").click()
-            # driver.find_element_by_class_name(
-            #     "a-button--secondary"
-            # ).click()  # submit button
-            # time.sleep(0.5)
-
-            # Screenshot code portion [DO NOT DELETE]
-            # driver.save_screenshot(
-            #     f"images/{assignment_title}/{quesiton_title + str(num)}.png"
-            # )
-
-            # start_element = driver.find_element_by_class_name("question-wrapper__heading")
-            # start_location = start_element.location
-            # start_x = start_location["x"]
-            # start_y = start_location["y"]
-
-            # end_element = driver.find_element_by_class_name("m-banner__content")
-            # end_size = end_element.size
-            # end_location = end_element.location
-            # end_x = end_location["x"] + end_size["width"]
-            # end_y = end_location["y"]
-
-            # img = Image.open(f"images/{assignment_title}/{quesiton_title}.png")
-            # img = img.crop((start_x, start_y, end_x, end_y))
-            # img.save(f"images/{assignment_title}/{quesiton_title}.png")
+            # Screenshots
+            time.sleep(2)
+            el = driver.find_element(by=By.XPATH, value='//*[@id="app"]/div/div[1]/div/div[3]/div[2]/div/div[2]/div')
+            el.screenshot(f"images/{assignment_title}/{question_title}.png")
 
             # getting answer id
             answers = WebDriverWait(driver, 10).until(     # is stored as a 'list'
@@ -176,9 +122,6 @@ def assignment_scraper(link):
                 answer_ID_mini_group.append(answer_IDs)
             answer_ID_group.append(answer_ID_mini_group)
 
-            # checks if theres a next question
-            # click_next = driver.find_elements_by_class_name(
-            #     "a-button--tertiary")[1]
         except Exception as e:
             print(e)
 
@@ -189,11 +132,10 @@ def assignment_scraper(link):
             click_next.click()
 
     try:
-            # time.sleep(1.5)
         print("Finished Copying: " + assignment_title + "\n")
 
-        for i in range(len(answer_ID_group)):
-            print(answer_ID_group[i])
+        # for i in range(len(answer_ID_group)):
+        #     print(answer_ID_group[i])
         
         csvFileName = str(f"images/{assignment_title}/{assignment_title}.csv")
         file = open(csvFileName, 'w+', newline ='')
@@ -204,8 +146,31 @@ def assignment_scraper(link):
         print("dont care")
     driver.close()
 
-def pageNavigation():
-    pass
+
+# Page navigation
+def pageNavigation(driver, i = -1):
+    try:
+        pageNavigationSelector = WebDriverWait(driver, 5).until(
+            EC.presence_of_all_elements_located((By.CLASS_NAME, "paginationv2__number"))
+        )
+        
+        if(getAllAssignments == False):
+            pageInput = int(input("Which page would you like to go to? (1/2/...): ")) - 1
+        else:
+            pageInput = i
+        pageNavigationSelector[pageInput].click()
+    except:
+        pass
+
+
+def assignmentList(driver):
+    # Get assignment links
+    assignments = driver.find_elements(by=By.TAG_NAME, value="tr")
+    assignment_links = []
+    for assignment in assignments:
+        assignment_links.append(assignment.get_attribute("href"))
+
+    return assignment_links
 
 
 if __name__ == "__main__":
@@ -216,6 +181,7 @@ if __name__ == "__main__":
     driver = webdriver.Chrome(chrome_options=chrome_options)
 
     driver.get("https://www.albert.io/log-in/")
+    time.sleep(2)
 
     # login
     WebDriverWait(driver, 10).until(
@@ -231,7 +197,6 @@ if __name__ == "__main__":
     )
     time.sleep(1)
     courses = driver.find_elements(by=By.CLASS_NAME, value="classrooms_viewer__list__item") # of type list
-    # courses = driver.find_elements_by_class_name("classrooms_viewer__list__item") # of type list
     course_names = []
     for course in courses:
         course_names.append(course.find_element(by=By.CLASS_NAME, value="class-card__inner").text)
@@ -251,57 +216,78 @@ if __name__ == "__main__":
     WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.CLASS_NAME, "sg-tabs-wrapper"))
     )
-    print("FUCK                          YEA")
-    # assignmentsTab = driver.find_element(by=By.CLASS_NAME, value="sg-tabs sg-tabs--with-nested-content")
     driver.find_element(by=By.XPATH, value='//*[@id="app"]/div/div[1]/div/div[3]/div/div[2]/div/div/div[1]/button[3]').click()  # I gave up with 'class'
 
-    # get a list of assignments
-    # WebDriverWait(driver, 10).until(
-    #     EC.presence_of_element_located((By.CLASS_NAME, "sgi__content--topic"))
-    # )
-    # assignments = driver.find_elements_by_class_name("sgi__content--topic")
+    if getAllAssignments == True:
+        i = 0
+        pageNavigation(driver, i)
 
-    # Get a list of assignments 
-    WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.XPATH, '//*[@id="app"]/div/div[1]/div/div[3]/div/div[2]/div/div/div[2]/div/div[1]/div[2]/table/tbody/tr[1]/td[2]'))   
-    )
-    print("FUCCKKCKKK EYA")
+        while True:
+            try:
+                # Get assignment links
+                assignments = WebDriverWait(driver, 10).until(
+                    EC.presence_of_all_elements_located((By.TAG_NAME, "tr"))
+                )
+                assignment_links = []
+                for assignment in assignments:
+                    assignment_links.append(assignment.get_attribute("href"))
+                
+                for i in range(len(assignments)):
+                    assignmentLink = "https://www.albert.io" + assignment_links[i+1]
+                    assignment_scraper(assignmentLink)    
+        
+                i = i+1
+                pageNavigation(driver, i)
+            except:
+                driver.quit()
+                quit()
 
-    # Prints a list of all assignments [MAJOR OPTIMIZATION IS POSSIBLE]
-    try: # janky AF but it kinda works
-        assignmentList = []
-        rando_fuck_int = 1
-        while rando_fuck_int < 100:
-            assignment = driver.find_element(by=By.XPATH, value='//*[@id="app"]/div/div[1]/div/div[3]/div/div[2]/div/div/div[2]/div/div[1]/div[2]/table/tbody/tr[{}]/td[2]'.format(rando_fuck_int))
-            assignmentList.append(assignment.text)
-            print(f'{rando_fuck_int} | {assignment.text}')
-            rando_fuck_int += 1
-    except Exception as e:
-        pass
+    else: 
+        # Select page
+        pageNavigation(driver)
 
-    # Get assignment links
-    assignments = driver.find_elements(by=By.TAG_NAME, value="tr")
-    assignment_links = []
-    for assignment in assignments:
-        assignment_links.append(assignment.get_attribute("href"))
+        # Get a list of assignments 
+        try:
+            WebDriverWait(driver, 10).until(
+                EC.presence_of_element_located((By.XPATH, '//*[@id="app"]/div/div[1]/div/div[3]/div/div[2]/div/div/div[2]/div/div[1]/div[2]/table/tbody/tr[1]/td[2]'))   
+            )
+        except:
+            print("No Closed Assignments")
+            driver.quit()
+            quit()
 
-    # Accessing assignments loop
-    assignmentNumber = int(input("Which assignment do you need the IDs to? (-1 for all): "))
-    if assignmentNumber == -1:
-        for i in range(len(assignments)):
-            assignmentLink = "https://www.albert.io" + assignment_links[i+1]
-            assignment_scraper(assignmentLink)
-    else:
+        # Prints a list of all assignments [MAJOR OPTIMIZATION IS POSSIBLE]
+        try: 
+            assignmentList = []
+            rando_fuck_int = 1
+            while rando_fuck_int < 100:
+                assignment = driver.find_element(by=By.XPATH, value='//*[@id="app"]/div/div[1]/div/div[3]/div/div[2]/div/div/div[2]/div/div[1]/div[2]/table/tbody/tr[{}]/td[2]'.format(rando_fuck_int))
+                assignmentList.append(assignment.text)
+                print(f'{rando_fuck_int} | {assignment.text}')
+                rando_fuck_int += 1
+        except Exception as e:
+            pass
+
+        # Get assignment links
+        assignments = WebDriverWait(driver, 10).until(
+            EC.presence_of_all_elements_located((By.TAG_NAME, "tr"))
+        )
+        assignment_links = []
+        for assignment in assignments:
+            assignment_links.append(assignment.get_attribute("href"))
+
+        # Accessing assignments loop
         condition = True
         while condition:
             try:
+                assignmentNumber = int(input("Which assignment do you need the IDs to? "))
                 assignmentLink = "https://www.albert.io" + assignment_links[assignmentNumber]
                 assignment_scraper(assignmentLink)
                 continueThing = input("Would you like to continue? (Y/N): ")
                 if(continueThing == "Y" or continueThing == "y"):
-                    assignmentNumber = int(input("Which assignment do you need the IDs to?: "))
+                    pass
                 else:
                     condition = False
             except Exception as e: 
                 print(e)
-    driver.close()
+        driver.quit()
