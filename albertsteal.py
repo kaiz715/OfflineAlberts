@@ -132,7 +132,9 @@ def assignment_scraper(link):
             click_next.click()
 
     try:
-        print("Finished Copying: " + assignment_title + "\n")
+        print("\n--------------------------------------------")
+        print("Finished Copying: " + assignment_title)
+        print("--------------------------------------------\n")
 
         # for i in range(len(answer_ID_group)):
         #     print(answer_ID_group[i])
@@ -163,14 +165,16 @@ def pageNavigation(driver, i = -1):
         pass
 
 
-def assignmentList(driver):
-    # Get assignment links
-    assignments = driver.find_elements(by=By.TAG_NAME, value="tr")
+# Get assignment links
+def getAssignmentLinks(driver):
+    assignments = WebDriverWait(driver, 10).until(
+        EC.presence_of_all_elements_located((By.TAG_NAME, "tr"))
+    )
     assignment_links = []
     for assignment in assignments:
         assignment_links.append(assignment.get_attribute("href"))
 
-    return assignment_links
+    return assignments, assignment_links
 
 
 if __name__ == "__main__":
@@ -225,12 +229,7 @@ if __name__ == "__main__":
         while True:
             try:
                 # Get assignment links
-                assignments = WebDriverWait(driver, 10).until(
-                    EC.presence_of_all_elements_located((By.TAG_NAME, "tr"))
-                )
-                assignment_links = []
-                for assignment in assignments:
-                    assignment_links.append(assignment.get_attribute("href"))
+                assignments, assignment_links = getAssignmentLinks(driver)
                 
                 for i in range(len(assignments)):
                     assignmentLink = "https://www.albert.io" + assignment_links[i+1]
@@ -269,12 +268,7 @@ if __name__ == "__main__":
             pass
 
         # Get assignment links
-        assignments = WebDriverWait(driver, 10).until(
-            EC.presence_of_all_elements_located((By.TAG_NAME, "tr"))
-        )
-        assignment_links = []
-        for assignment in assignments:
-            assignment_links.append(assignment.get_attribute("href"))
+        assignments, assignment_links = getAssignmentLinks(driver)
 
         # Accessing assignments loop
         condition = True
