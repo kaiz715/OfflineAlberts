@@ -17,12 +17,13 @@ def starter():
     email = config.email
     password = config.password
     chrome_options = Options()
-    chrome_options.add_argument("--headless")   #Necessary for screenshots to work
+    chrome_options.add_argument("--headless")   # Necessary for full element screenshots to work
     chrome_options.add_argument("--window-size=1920,10000")
     driver = webdriver.Chrome(options=chrome_options)
 
     driver.get("https://www.albert.io/log-in/")
     time.sleep(0.5)
+
     # login
     WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.NAME, "identifier"))
@@ -38,17 +39,13 @@ def starter():
 def assignment_scraper(link):
     driver = starter()  # Takes driver from starter and uses that
     driver.get(link)
-
-    # assignment_title = driver.find_element_by_name("og:description").get_attribute(
-    #     "content"
-    # )
-    # assignment_title = re.search(
-    #     'in topic "(.*)"', str(assignment_title)).group(1)    
+   
     assignment_title = WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.XPATH, '//*[@id="app"]/div/div[1]/div/div[3]/div[2]/div/div/div/div[2]/div[1]/div/div[1]/h1'))
     ).text
 
-    assignment_title = (    # goes pew pew to bad bad chars
+    # goes pew pew to bad bad chars
+    assignment_title = (    
         assignment_title.replace(":", "")
         .replace("/", " ")
         .replace("?", "")
@@ -68,9 +65,7 @@ def assignment_scraper(link):
         EC.presence_of_all_elements_located((By.TAG_NAME, "button"))
     )[1].click()
 
-
-
-    # # makes a directory for the assignment
+    # Makes a directory for the assignment
     try:
         os.mkdir(f"images/{assignment_title}")
     except Exception as exception:
@@ -125,6 +120,7 @@ def assignment_scraper(link):
         except Exception as e:
             print(e)
 
+        # Next question
         click_next = driver.find_element(by=By.XPATH, value='//button[text()="Next"]')
         if click_next.get_property("disabled"):
             next_button = False
@@ -135,9 +131,6 @@ def assignment_scraper(link):
         print("\n--------------------------------------------")
         print("Finished Copying: " + assignment_title)
         print("--------------------------------------------\n")
-
-        # for i in range(len(answer_ID_group)):
-        #     print(answer_ID_group[i])
         
         csvFileName = str(f"images/{assignment_title}/{assignment_title}.csv")
         file = open(csvFileName, 'w+', newline ='')
@@ -178,22 +171,7 @@ def getAssignmentLinks(driver):
 
 
 if __name__ == "__main__":
-    email = config.email
-    password = config.password
-    chrome_options = Options()
-    # chrome_options.add_argument("--headless")
-    driver = webdriver.Chrome(chrome_options=chrome_options)
-
-    driver.get("https://www.albert.io/log-in/")
-    time.sleep(2)
-
-    # login
-    WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.NAME, "identifier"))
-    ).send_keys(email)
-    WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.NAME, "password"))
-    ).send_keys(password, Keys.RETURN)
+    driver = starter()
 
     # list courses
     WebDriverWait(driver, 10).until(
@@ -235,12 +213,12 @@ if __name__ == "__main__":
                     assignmentLink = "https://www.albert.io" + assignment_links[i+1]
                     assignment_scraper(assignmentLink)    
         
+                # Goes on to next page
                 i = i+1
                 pageNavigation(driver, i)
             except:
                 driver.quit()
                 quit()
-
     else: 
         # Select page
         pageNavigation(driver)
