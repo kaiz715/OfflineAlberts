@@ -1,5 +1,5 @@
 # OfflineAlberts
-  This script was made to make a local copy of questions and answers of review material on Albert.io. Very useful for studying on the road/when you have no wifi.
+  This script was made to make a local copy of questions and answers of review material on Albert.io. Very useful for studying on the road/when you have no wifi/saving questions past when your subscription ends.
 
   You will need an active Albert.io subscription to be able to use this, but since this saves a local copy, you will have the review material after your subscription expires.
 
